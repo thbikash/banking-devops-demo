@@ -1,0 +1,46 @@
+name: Banking App CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: |
+          mvn clean package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: banking-app-jar
+          path: target/*.jar
+
+  approve-and-deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production  # Manual approval
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: banking-app-jar
+
+      - name: Deploy (simulated)
+        run: |
+          echo "Deploying banking application..."
+          ls -l *.jar
+          echo "Deployment completed"
