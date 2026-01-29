@@ -1,0 +1,24 @@
+name: CD - Deploy Banking App
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_version:
+        description: "Docker image version (e.g. 1.0.12)"
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production   # 👈 approval gate
+
+    steps:
+      - name: Deploy container
+        run: |
+          echo "Deploying version ${{ inputs.image_version }}"
+          docker run -d \
+            --name banking-app \
+            -p 8080:8080 \
+            ${{ secrets.DOCKERHUB_USERNAME }}/banking-app:${{ inputs.image_version }}
