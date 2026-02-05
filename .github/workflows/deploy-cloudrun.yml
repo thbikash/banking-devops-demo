@@ -39,8 +39,7 @@ jobs:
          docker buildx build \
         --load \
         -f Dockerfile \
-        -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} \
-        .
+        -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} .
 
 
 
