@@ -33,13 +33,26 @@ jobs:
       run: |
         gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
+    - name: Debug env vars
+      run: |
+        echo "REGION=[$REGION]"
+        echo "PROJECT_ID=[$PROJECT_ID]"
+        echo "REPOSITORY=[$REPOSITORY]"
+       
+    - name: Show final image name
+      run: |
+        echo "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/banking-app:${GITHUB_SHA}"
+
+
     - name: Build Docker image
-      run:  |
+      run: |
+        set -eux
         ls -la
-         docker buildx build \
-        --load \
-        -f Dockerfile \
-        -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} .
+        docker buildx build \
+          --load \
+          -f Dockerfile \
+          -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/banking-app:${GITHUB_SHA}" \
+          .
 
 
 
