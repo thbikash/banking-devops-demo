@@ -33,6 +33,12 @@ jobs:
       run: |
         gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
+    - name: Normalize env vars
+      run: |
+        echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+        echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+        
+
     - name: Debug env vars
       run: |
         echo "REGION=[$REGION]"
@@ -47,12 +53,12 @@ jobs:
     - name: Build Docker image
       run: |
         set -eux
-        ls -la
         docker buildx build \
           --load \
           -f Dockerfile \
           -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/banking-app:${GITHUB_SHA}" \
           .
+
 
 
 
