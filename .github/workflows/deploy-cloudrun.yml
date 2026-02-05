@@ -34,14 +34,7 @@ jobs:
         gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
     - name: Build Docker image
-      working-directory: ${{ github.workspace }}
-      run: |
-          echo "Workspace:"
-          pwd
-          ls -la
-          docker build \
-          -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} \
-          .
+      run: docker build -f dockerfile -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} .
 
     - name: Push Docker image
       run: |
