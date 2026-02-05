@@ -36,7 +36,12 @@ jobs:
     - name: Build Docker image
       run:  |
         ls -la
-        docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} .
+         docker buildx build \
+        --load \
+        -f Dockerfile \
+        -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/banking-app:${{ github.sha }} \
+        .
+
 
 
     - name: Push Docker image
