@@ -57,6 +57,10 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
+      - name: Validate env vars
+        run: |
+            echo "IMAGE=$(echo "$image" | xargs)" 
+
       - name: Deploy DEV
         run: |
           gcloud run deploy banking-app-dev \
