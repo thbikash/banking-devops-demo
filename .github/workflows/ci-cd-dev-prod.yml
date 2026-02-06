@@ -12,44 +12,45 @@ env:
   IMAGE_NAME: banking-app
 
 jobs:
- build:
-  name: Build & Push Image
-  runs-on: ubuntu-latest
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
 
-  outputs:
-    image: ${{ steps.export-image.outputs.image }}
+    outputs:
+      image: ${{ steps.export-image.outputs.image }}
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v2
 
-    - name: Configure Docker
-      run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
-    
-    - name: Normalize env vars
-      run: |
-        echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
-        echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+      - name: Configure Docker
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-    - name: Build and Push
-      run: |
-        IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-        echo "Built image: $IMAGE"
-        docker build -t "$IMAGE" .
-        docker push "$IMAGE"
+      - name: Normalize env vars
+        run: |
+          echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+          echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+  
 
-    - name: Export image output
-      id: export-image
-      run: |
-        IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-        echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+      - name: Build and Push
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+          echo "Built image: $IMAGE"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
 
- deploy-dev:
+      - name: Export image output
+        id: export-image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+  deploy-dev:
     name: Deploy to DEV
     runs-on: ubuntu-latest
     needs: build
@@ -64,12 +65,11 @@ jobs:
 
       - name: Validate image input
         run: |
-            echo "Image from build job: [${{ needs.build.outputs.image }}]"
-            if [ -z "${{ needs.build.outputs.image }}" ]; then
+          echo "Image from build job: [${{ needs.build.outputs.image }}]"
+          if [ -z "${{ needs.build.outputs.image }}" ]; then
             echo "❌ IMAGE IS EMPTY — failing fast"
             exit 1
-            fi
-
+          fi
 
       - name: Deploy DEV
         run: |
@@ -79,7 +79,8 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --max-instances=1
- deploy-prod:
+
+  deploy-prod:
     name: Deploy to PROD
     runs-on: ubuntu-latest
     needs: deploy-dev
