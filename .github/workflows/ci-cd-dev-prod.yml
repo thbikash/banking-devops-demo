@@ -59,7 +59,11 @@ jobs:
 
       - name: Validate env vars
         run: |
-            echo "IMAGE=$(echo "$image" | xargs)" 
+            echo "IMAGE=$(echo "$image" | xargs)"
+            echo "Checking image" 
+            echo "$GITHUB_OUTPUT"
+            echo "$image"
+            echo "checked image"
 
       - name: Deploy DEV
         run: |
