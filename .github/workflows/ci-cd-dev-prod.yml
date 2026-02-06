@@ -63,6 +63,7 @@ jobs:
             echo "Checking image" 
             echo "$GITHUB_OUTPUT"
             echo "$image"
+            echo "$IMAGE"
             echo "checked image"
 
       - name: Deploy DEV
