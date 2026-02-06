@@ -57,6 +57,9 @@ jobs:
     environment: dev
 
     steps:
+
+      - uses: actions/checkout@v4
+
       - uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
