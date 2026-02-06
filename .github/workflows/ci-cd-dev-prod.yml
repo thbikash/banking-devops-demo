@@ -33,12 +33,38 @@ jobs:
           echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
           echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV  
 
+      - name: Set image version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="$(date +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION"
+              
+              
+
+      # - name: Build and Push
+      #   run: |
+      #     IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+      #     echo "Building $IMAGE"
+      #     docker build -t "$IMAGE" .
+      #     docker push "$IMAGE"
+
       - name: Build and Push
         run: |
-          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-          echo "Building $IMAGE"
-          docker build -t "$IMAGE" .
-          docker push "$IMAGE"
+          IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
+
+          docker build \
+            -t "$IMAGE_BASE:$VERSION" \
+            -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
+            .
+
+          docker push "$IMAGE_BASE:$VERSION"
+          docker push "$IMAGE_BASE:sha-${GITHUB_SHA::7}"
 
 
   deploy-dev:
@@ -59,49 +85,49 @@ jobs:
             echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
             echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
 
-        - name: Set image
-          run: |
-            IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-            echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+        # - name: Set image
+        #   run: |
+        #     IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+        #     echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
         - name: Deploy DEV
           run: |
             gcloud run deploy banking-app-dev \
-              --image "$IMAGE" \
+              --image "$IMAGE_BASE:$VERSION" \
               --region $REGION \
               --platform managed \
               --allow-unauthenticated \
               --max-instances=1
 
 
-  deploy-prod:
-    name: Deploy to PROD
-    runs-on: ubuntu-latest
-    needs: deploy-dev
-    environment: production
+  # deploy-prod:
+  #   name: Deploy to PROD
+  #   runs-on: ubuntu-latest
+  #   needs: deploy-dev
+  #   environment: production
 
-    steps:
-      - uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+  #   steps:
+  #     - uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: google-github-actions/setup-gcloud@v2
+  #     - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Normalize env vars
-        run: |
-            echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
-            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+  #     - name: Normalize env vars
+  #       run: |
+  #           echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+  #           echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
 
-      - name: Set image
-        run: |
-          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+  #     - name: Set image
+  #       run: |
+  #         IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+  #         echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Deploy PROD
-        run: |
-          gcloud run deploy banking-app-prod \
-            --image "$IMAGE" \
-            --region $REGION \
-            --platform managed \
-            --allow-unauthenticated \
-            --max-instances=1
+  #     - name: Deploy PROD
+  #       run: |
+  #         gcloud run deploy banking-app-prod \
+  #           --image "$IMAGE" \
+  #           --region $REGION \
+  #           --platform managed \
+  #           --allow-unauthenticated \
+  #           --max-instances=1
