@@ -27,6 +27,11 @@ jobs:
 
       - name: Configure Docker
         run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+      
+      - name: Normalize env vars
+        run: |
+          echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+          echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV  
 
       - name: Build and Push
         run: |
@@ -48,6 +53,11 @@ jobs:
             credentials_json: ${{ secrets.GCP_SA_KEY }}
 
         - uses: google-github-actions/setup-gcloud@v2
+
+        - name: Normalize env vars
+          run: |
+            echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
 
         - name: Set image
           run: |
@@ -76,6 +86,11 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Normalize env vars
+        run: |
+            echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
 
       - name: Set image
         run: |
