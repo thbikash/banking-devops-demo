@@ -45,7 +45,7 @@ jobs:
           else
             VERSION="$(date +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
           fi
-          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
            
 
@@ -60,7 +60,7 @@ jobs:
         id: build_push
         run: |
           IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
-          
+          echo "IMAGE_BASE is : $IMAGE_BASE"
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
