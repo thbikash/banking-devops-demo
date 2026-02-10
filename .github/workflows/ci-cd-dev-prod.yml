@@ -41,11 +41,8 @@ jobs:
           else
             VERSION="$(date +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
           fi
-
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION"
-              
-              
+          
+          IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME" 
 
       # - name: Build and Push
       #   run: |
@@ -56,8 +53,7 @@ jobs:
 
       - name: Build and Push
         run: |
-          IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
-
+        
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
@@ -86,6 +82,7 @@ jobs:
             echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
             echo "$IMAGE_BASE:$VERSION"
             echo "IMAGE=$IMAGE_BASE:$VERSION" >> $GITHUB_ENV
+            echo 
 
 
         # - name: Set image
