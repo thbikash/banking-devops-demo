@@ -64,8 +64,7 @@ jobs:
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
-            .
-
+            
           docker push "$IMAGE_BASE:$VERSION"
           docker push "$IMAGE_BASE:sha-${GITHUB_SHA::7}"
 
