@@ -60,14 +60,15 @@ jobs:
         id: build_push
         run: |
           IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
-          echo "base_image=$IMAGE_BASE" >> $GITHUB_OUTPUT
+          
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
-            
+            .
+
           docker push "$IMAGE_BASE:$VERSION"
           docker push "$IMAGE_BASE:sha-${GITHUB_SHA::7}"
-
+          echo "base_image=$IMAGE_BASE" >> $GITHUB_OUTPUT
 
   deploy-dev:
       name: Deploy to DEV
