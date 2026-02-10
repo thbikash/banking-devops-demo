@@ -102,11 +102,12 @@ jobs:
         - name: Deploy DEV
           run: |
 
-            echo "BASE_IMAGE is ${{needs.build.outputs.BASE_IMAGE}}" \
+            IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
+            echo "BASE_IMAGE is $IMAGE_BASE" \
             echo "IMAGE_VERSION is ${{needs.build.outputs.IMAGE_VERSION}}" \
             
             gcloud run deploy banking-app-dev \
-              --image "${{needs.build.outputs.BASE_IMAGE}}:${{needs.build.outputs.IMAGE_VERSION}}" \
+              --image "$IMAGE_BASE:${{needs.build.outputs.IMAGE_VERSION}}" \
               --region $REGION \
               --platform managed \
               --allow-unauthenticated \
