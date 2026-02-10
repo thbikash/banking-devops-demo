@@ -84,6 +84,9 @@ jobs:
           run: |
             echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
             echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+            echo "$IMAGE_BASE:$VERSION"
+            echo "IMAGE=$IMAGE_BASE:$VERSION" >> $GITHUB_ENV
+
 
         # - name: Set image
         #   run: |
