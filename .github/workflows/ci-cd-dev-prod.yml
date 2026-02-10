@@ -18,7 +18,7 @@ jobs:
 
     outputs:
       IMAGE_VERSION: ${{steps.version.outputs.version}}
-      BASE_IMAGE: ${{steps.build_push.outputs.app}}
+      BASE_IMAGE: ${{steps.build_push.outputs.base_image}}
     steps:
       - uses: actions/checkout@v4
 
@@ -99,6 +99,10 @@ jobs:
 
         - name: Deploy DEV
           run: |
+
+            echo "BASE_IMAGE is ${{needs.build.outputs.BASE_IMAGE}}" \
+            echo "IMAGE_VERSION is ${{needs.build.outputs.IMAGE_VERSION}}" \
+            
             gcloud run deploy banking-app-dev \
               --image "${{needs.build.outputs.BASE_IMAGE}}:${{needs.build.outputs.IMAGE_VERSION}}" \
               --region $REGION \
