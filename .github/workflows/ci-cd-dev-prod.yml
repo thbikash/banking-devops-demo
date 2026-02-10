@@ -16,6 +16,9 @@ jobs:
     name: Build & Push Image
     runs-on: ubuntu-latest
 
+    outputs:
+      IMAGE_VERSION: ${{steps.version.outputs.version}}
+      BASE_IMAGE: ${{steps.build_push.outputs.app}}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +35,7 @@ jobs:
         run: |
           echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
           echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV  
-          IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
+          
 
       - name: Set image version
         id: version
@@ -42,6 +45,7 @@ jobs:
           else
             VERSION="$(date +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
            
 
@@ -53,8 +57,10 @@ jobs:
       #     docker push "$IMAGE"
 
       - name: Build and Push
+        id: build_push
         run: |
-          
+          IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
+          echo "base_image=$IMAGE_BASE" >> $GITHUB_OUTPUT
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
@@ -80,10 +86,7 @@ jobs:
         - name: Normalize env vars
           run: |
             echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
-            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
-            echo "$IMAGE_BASE:$VERSION"
-            echo "IMAGE=$IMAGE_BASE:$VERSION" >> $GITHUB_ENV
-            echo 
+            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV        
 
 
         # - name: Set image
@@ -94,7 +97,7 @@ jobs:
         - name: Deploy DEV
           run: |
             gcloud run deploy banking-app-dev \
-              --image "$IMAGE_BASE:$VERSION" \
+              --image "${{needs.build.outputs.BASE_IMAGE}}:${{needs.build.outputs.IMAGE_VERSION}}" \
               --region $REGION \
               --platform managed \
               --allow-unauthenticated \
