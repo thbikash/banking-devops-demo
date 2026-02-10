@@ -62,6 +62,7 @@ jobs:
           IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
           echo "IMAGE_BASE is : $IMAGE_BASE" \
           echo "VERSION is: $VERSION" \
+          echo "VERSIONNNN is : ${{needs.build.version.VERSION}}"
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
             -t "$IMAGE_BASE:sha-${GITHUB_SHA::7}" \
