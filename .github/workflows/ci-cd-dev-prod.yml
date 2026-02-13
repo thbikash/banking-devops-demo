@@ -39,7 +39,10 @@ jobs:
           echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
           echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV  
           
-
+      - name: Debug ref
+        run: |
+          echo "GITHUB_REF is: $GITHUB_REF"
+      
       - name: Set image version
         id: version
         run: |
@@ -58,8 +61,8 @@ jobs:
           IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
           echo "IMAGE_BASE=$IMAGE_BASE" >> $GITHUB_ENV
           echo "base_image=$IMAGE_BASE" >> $GITHUB_OUTPUT
-          echo "IMAGE_BASE is : $IMAGE_BASE" \
-          echo "VERSION is: $VERSION" \
+          echo "IMAGE_BASE is : $IMAGE_BASE" 
+          echo "VERSION is: $VERSION" 
           
           docker build \
             -t "$IMAGE_BASE:$VERSION" \
@@ -71,6 +74,7 @@ jobs:
           
 
   deploy-dev:
+      if: github.ref == 'refs/heads/main'
       name: Deploy to DEV
       runs-on: ubuntu-latest
       needs: build
