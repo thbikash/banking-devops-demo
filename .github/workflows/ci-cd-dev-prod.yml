@@ -3,6 +3,9 @@ name: CI/CD – Cloud Run (Dev → Prod)
 on:
   push:
     branches: [ main ]
+
+    tags: ['v*']
+      
   workflow_dispatch:
 
 env:
@@ -49,14 +52,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
            
-
-      # - name: Build and Push
-      #   run: |
-      #     IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-      #     echo "Building $IMAGE"
-      #     docker build -t "$IMAGE" .
-      #     docker push "$IMAGE"
-
       - name: Build and Push
         id: build_push
         run: |
@@ -94,11 +89,6 @@ jobs:
             echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV        
 
 
-        # - name: Set image
-        #   run: |
-        #     IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-        #     echo "IMAGE=$IMAGE" >> $GITHUB_ENV
-
         - name: Deploy DEV
           run: |
 
@@ -114,34 +104,51 @@ jobs:
               --max-instances=1
 
 
-  # deploy-prod:
-  #   name: Deploy to PROD
-  #   runs-on: ubuntu-latest
-  #   needs: deploy-dev
-  #   environment: production
+  deploy-prod:
+    name: Deploy to PROD
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: production
 
-  #   steps:
-  #     - uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-  #     - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v2
 
-  #     - name: Normalize env vars
-  #       run: |
-  #           echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
-  #           echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
+      - name: Normalize env vars
+        run: |
+            echo "PROJECT_ID=$(echo "$PROJECT_ID" | xargs)" >> $GITHUB_ENV
+            echo "REGION=$(echo "$REGION" | xargs)" >> $GITHUB_ENV
 
-  #     - name: Set image
-  #       run: |
-  #         IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-  #         echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+      - name: Set image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-  #     - name: Deploy PROD
-  #       run: |
-  #         gcloud run deploy banking-app-prod \
-  #           --image "$IMAGE" \
-  #           --region $REGION \
-  #           --platform managed \
-  #           --allow-unauthenticated \
-  #           --max-instances=1
+      # - name: Deploy PROD
+      #   run: |
+      #     gcloud run deploy banking-app-prod \
+      #       --image "$IMAGE" \
+      #       --region $REGION \
+      #       --platform managed \
+      #       --allow-unauthenticated \
+      #       --max-instances=1
+
+
+
+
+      - name: Deploy PRODUCTION
+        run: |
+
+            IMAGE_BASE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME"
+            echo "BASE_IMAGE is $IMAGE_BASE" \
+            echo "IMAGE_VERSION is ${{needs.build.outputs.IMAGE_VERSION}}" \
+            
+            gcloud run deploy banking-app-prod \
+              --image "$IMAGE_BASE:${{needs.build.outputs.IMAGE_VERSION}}" \
+              --region $REGION \
+              --platform managed \
+              --allow-unauthenticated \
+              --max-instances=1      
