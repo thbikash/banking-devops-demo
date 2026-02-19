@@ -1,10 +1,10 @@
 name: CI/CD – Cloud Run (Dev → Prod)
 
 on:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [ main ]
 
-    tags: ['v*']
+  #   tags: ['v*']
       
   workflow_dispatch:
 
