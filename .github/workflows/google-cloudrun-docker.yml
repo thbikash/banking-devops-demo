@@ -36,7 +36,7 @@ on:
   workflow_dispatch:    
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # TODO: update to your Google Cloud project ID
+  PROJECT_ID: 'banking-app-test-486402' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
   SERVICE: 'banking-app' # TODO: update to your service name
   #WORKLOAD_IDENTITY_PROVIDER: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: update to your workload identity provider
