@@ -88,6 +88,10 @@ jobs:
           registry: '${{ env.REGION }}-docker.pkg.dev'
       - name: Debug identity
         run: gcloud auth list
+
+      - name: Check Repo Exists  
+        run: |-
+         gcloud artifacts repositories describe banking-repo --location=us-central1  
         
       - name: 'Build and Push Container'
         run: |-
