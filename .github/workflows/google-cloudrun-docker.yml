@@ -38,7 +38,7 @@ on:
 env:
   PROJECT_ID: 'banking-app-test-486402' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
-  SERVICE: 'banking-repo/banking-app'
+  #SERVICE: 'banking-repo/banking-app'
   REPO: 'banking-repo'
   PKG: 'banking-app'
   # TODO: update to your service name
@@ -84,7 +84,7 @@ jobs:
         
       - name: 'Build and Push Container'
         run: |-
-          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.PKG }}:${{ github.sha }}"
           docker build --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
 
