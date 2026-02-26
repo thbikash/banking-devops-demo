@@ -43,7 +43,8 @@ env:
   PKG: 'banking-app'
   # TODO: update to your service name
   
-  WORKLOAD_IDENTITY_PROVIDER: 'projects/342079872292/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+  #WORKLOAD_IDENTITY_PROVIDER: 'projects/342079872292/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+  WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
 
 jobs:
   deploy:
