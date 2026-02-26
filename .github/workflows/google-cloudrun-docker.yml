@@ -38,7 +38,7 @@ on:
 env:
   PROJECT_ID: 'banking-app-test-486402' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
-  SERVICE: 'banking-repo' # TODO: update to your service name
+  SERVICE: 'banking-app' # TODO: update to your service name
   #WORKLOAD_IDENTITY_PROVIDER: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: update to your workload identity provider
   WORKLOAD_IDENTITY_PROVIDER: 'projects/342079872292/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
 
