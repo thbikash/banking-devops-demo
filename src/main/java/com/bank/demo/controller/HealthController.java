@@ -8,11 +8,11 @@ public class HealthController {
 
     @GetMapping("/")
     public String home() {
-        return "Banking App. is running successfully";
+        return "Banking App. is running successfully.....";
     }
 
     @GetMapping("/health")
     public String health() {
-        return "Application is healthy";
+        return "Application is healthy....";
     }
 }
