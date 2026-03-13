@@ -40,3 +40,5 @@ app.get("/images", async (req,res)=>{
  }
 
 })
+
+app.listen(8080,()=>console.log("API running"))
