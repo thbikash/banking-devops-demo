@@ -1,38 +1,79 @@
-const API = "https://deploy-api-342079872292.us-central1.run.app"
+const express = require("express");
+const { exec } = require("child_process");
 
-async function loadImages(){
+const app = express();
+app.use(express.json());
 
- const res = await fetch(API + "/images")
+const REPO =
+"us-central1-docker.pkg.dev/banking-app-test-486402/banking-repo";
 
- const images = await res.json()
+/*
+LIST IMAGES
+*/
+app.get("/images", (req, res) => {
 
- const select = document.getElementById("images")
+ const cmd =
+ `gcloud artifacts docker images list ${REPO} \
+ --sort-by=~CREATE_TIME \
+ --limit=10 \
+ --format="value(IMAGE,DIGEST)"`;
 
- images.forEach(img => {
+ exec(cmd, (error, stdout, stderr) => {
 
-  const option = document.createElement("option")
+  if (error) {
+   console.error(stderr);
+   return res.status(500).json({ error: stderr });
+  }
 
-  option.value = img
-  option.text = img
+  const images = stdout
+   .trim()
+   .split("\n")
+   .map(line => line.trim());
 
-  select.appendChild(option)
+  res.json(images);
 
- })
+ });
 
-}
+});
 
-async function deploy(){
+/*
+DEPLOY IMAGE
+*/
+app.post("/deploy", (req, res) => {
 
- const image = document.getElementById("images").value
+ const image = req.body.image;
 
- await fetch(API + "/deploy",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body: JSON.stringify({image})
- })
+ if (!image) {
+  return res.status(400).json({ error: "Image not provided" });
+ }
 
- alert("Deployment started")
+ const fullImage = `${REPO}/${image}`;
 
-}
+ const cmd =
+ `gcloud run deploy banking-app \
+ --image=${fullImage} \
+ --region=us-central1 \
+ --platform=managed \
+ --allow-unauthenticated`;
 
-loadImages()
+ exec(cmd, (error, stdout, stderr) => {
+
+  if (error) {
+   console.error(stderr);
+   return res.status(500).json({ error: stderr });
+  }
+
+  res.json({
+   status: "Deployment started",
+   image: image
+  });
+
+ });
+
+});
+
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+ console.log(`Deploy API running on port ${PORT}`);
+});
