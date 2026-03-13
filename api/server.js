@@ -1,39 +1,31 @@
 const express = require("express")
 const cors = require("cors")
-const { exec } = require("child_process")
+const {ArtifactRegistryClient} = require("@google-cloud/artifact-registry")
 
 const app = express()
 app.use(cors())
-app.use(express.json())
 
-const REGION="us-central1"
-const PROJECT="banking-app-test-486402"
-const REPO="banking-repo"
+const client = new ArtifactRegistryClient()
 
-app.get("/images",(req,res)=>{
+const PROJECT = "banking-app-test-486402"
+const LOCATION = "us-central1"
+const REPO = "banking-repo"
 
- const cmd=`gcloud artifacts docker images list ${REGION}-docker.pkg.dev/${PROJECT}/${REPO}`
+app.get("/images", async (req,res)=>{
 
- exec(cmd,(err,stdout)=>{
-  if(err) return res.send(err)
-  res.send(stdout)
- })
+ try{
 
-})
+  const parent = `projects/${PROJECT}/locations/${LOCATION}/repositories/${REPO}`
 
-app.post("/deploy",(req,res)=>{
+  const [packages] = await client.listPackages({parent})
 
- const image=req.body.image
+  const images = packages.map(p => p.name)
 
- const cmd=`gcloud run deploy banking-app \
- --image ${image} \
- --region ${REGION} \
- --quiet`
+  res.json(images)
 
- exec(cmd,(err,stdout)=>{
-  if(err) return res.send(err)
-  res.send(stdout)
- })
+ }catch(err){
+  res.status(500).send(err.toString())
+ }
 
 })
 
