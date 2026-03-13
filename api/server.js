@@ -19,7 +19,19 @@ app.get("/images", async (req,res)=>{
 
   const [packages] = await client.listPackages({parent})
 
-  const images = packages.map(p => p.name)
+  let images=[]
+
+  for(const pkg of packages){
+
+   const [versions] = await client.listVersions({
+     parent: pkg.name
+   })
+
+   versions.forEach(v=>{
+     images.push(v.name)
+   })
+
+  }
 
   res.json(images)
 
@@ -28,5 +40,3 @@ app.get("/images", async (req,res)=>{
  }
 
 })
-
-app.listen(8080,()=>console.log("API running"))
