@@ -38,13 +38,17 @@ app.get("/images", async (req,res)=>{
     parent: pkg.name
    })
 
-        versions.forEach(v=>{
-            console.log(v)
+    versions.forEach(v=>{
+
+    const imageName = pkg.name.split("/").pop()
+    const digest = v.name.split("/").pop()
+
     images.push({
-    image: pkg.name.split("/").pop(),
-    digest: v.name.split("/").pop(),
-    created: v.createTime
+    image: imageName,
+    digest: digest,
+    created: v.createTime || v.updateTime || "unknown"
     })
+
     })
 
   }
