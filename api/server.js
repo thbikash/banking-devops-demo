@@ -21,45 +21,33 @@ const REPO_PATH =
    LIST IMAGES
 --------------------------------*/
 
-app.get("/images", async (req,res)=>{
+app.get("/images",(req,res)=>{
 
- try{
+ const { exec } = require("child_process")
 
-  const parent =
-  `projects/${PROJECT}/locations/${LOCATION}/repositories/${REPO}`
+ const cmd = `
+ gcloud artifacts docker images list \
+ us-central1-docker.pkg.dev/banking-app-test-486402/banking-repo \
+ --format="json"
+ `
 
-  const [packages] = await client.listPackages({parent})
+ exec(cmd,(err,stdout,stderr)=>{
 
-  let images=[]
-
-  for(const pkg of packages){
-
-   const [versions] = await client.listVersions({
-    parent: pkg.name
-   })
-
-    versions.forEach(v=>{
-
-    console.log(JSON.stringify(v,null,2))
-
-    const imageName = pkg.name.split("/").pop()
-    const digest = v.name.split("/").pop()
-
-    images.push({
-    image: imageName,
-    digest: digest,
-    created: v.createTime || v.updateTime || "unknown"
-    })
-
-    })
-
+  if(err){
+   return res.status(500).send(stderr)
   }
+
+  const data = JSON.parse(stdout)
+
+  const images = data.map(img=>({
+   image: img.package.split("/").pop(),
+   digest: img.version,
+   created: img.createTime
+  }))
 
   res.json(images)
 
- }catch(err){
-  res.status(500).send(err.toString())
- }
+ })
 
 })
 
