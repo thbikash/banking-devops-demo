@@ -1,22 +1,28 @@
-const API="https://banking-app-342079872292.us-central1.run.app"
+const API = "https://banking-app-342079872292.us-central1.run.app"
 
 async function loadImages(){
 
- const res=await fetch(API+"/images")
- const images=await res.json()
+ const res = await fetch(API + "/images")
+ const data = await res.json()
 
- const table=document.getElementById("imageTable")
+ const table = document.getElementById("imageTable")
 
- images.forEach(img=>{
+ data.forEach(line => {
 
-  const row=document.createElement("tr")
+  // example line:
+  // projects/.../packages/banking-app/versions/sha256:abcd
 
-  row.innerHTML=`
-    <td>${img.image || "-"}</td>
-    <td>${img.digest || "-"}</td>
-    <td>${img.created || "-"}</td>
+  const image = line.split("/packages/")[1].split("/")[0]
+  const digest = line.split("/versions/")[1]
+
+  const row = document.createElement("tr")
+
+  row.innerHTML = `
+   <td>${image}</td>
+   <td>${digest}</td>
+   <td>-</td>
    <td>
-    <button onclick="deploy('${img.image}','${img.digest}')">
+    <button onclick="deploy('${image}','${digest}')">
      Deploy
     </button>
    </td>
@@ -28,13 +34,12 @@ async function loadImages(){
 
 }
 
-
 async function deploy(image,digest){
 
- await fetch(API+"/deploy",{
+ await fetch(API + "/deploy",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({image,digest})
+  body: JSON.stringify({image,digest})
  })
 
  alert("Deployment started")
