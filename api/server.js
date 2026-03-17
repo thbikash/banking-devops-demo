@@ -21,59 +21,49 @@ const REPO_PATH =
    LIST IMAGES
 --------------------------------*/
 
-app.get("/images", async (req,res)=>{
+app.get("/images", async (req, res) => {
+  try {
+    const parent = `projects/${PROJECT}/locations/${LOCATION}/repositories/${REPO}`;
+    const [packages] = await client.listPackages({ parent });
+    let images = [];
 
- try{
+    for (const pkg of packages) {
+      // The first element of the response is the array of version objects
+      const [versions] = await client.listVersions({
+        parent: pkg.name
+      });
 
-  const parent =
-  `projects/${PROJECT}/locations/${LOCATION}/repositories/${REPO}`
+      versions.forEach(v => {
+        // v.name looks like: projects/.../packages/my-app/versions/sha256:...
+        const parts = v.name.split('/');
+        const imageName = parts[parts.indexOf('packages') + 1];
+        const digest = parts[parts.indexOf('versions') + 1];
 
-  const [packages] = await client.listPackages({parent})
+        let createdAt = "unknown";
+        if (v.createTime) {
+          // Google SDK returns a Timestamp object {seconds, nanos}
+          const seconds = v.createTime.seconds || v.createTime;
+          const date = new Date(seconds * 1000);
+          createdAt = date.toLocaleString();
+        }
 
-  let images=[]
+        images.push({
+          image: imageName,
+          digest: digest,
+          created: createdAt
+        });
+      });
+    }
 
-  for(const pkg of packages){
+    // CRITICAL: Ensure we send JSON
+    res.setHeader('Content-Type', 'application/json');
+    res.json(images);
 
-   const [versions] = await client.listVersions({
-    parent: pkg.name
-   })
-
-    versions.forEach(v=>{
-
- const full = v.name
-
- const image = full.split("/packages/")[1].split("/")[0]
- const digest = full.split("/versions/")[1]
-
- // Capture the createTime. 
-  // It usually comes as { seconds: "...", nanos: "..." } or a Date string.
-  let createdAt = "unknown";
-  if (v.createTime) {
-    // If it's a Protobuf timestamp (has .seconds), convert to JS Date
-    const date = v.createTime.seconds 
-      ? new Date(v.createTime.seconds * 1000) 
-      : new Date(v.createTime);
-    
-    createdAt = date.toLocaleString(); // Format: "M/D/YYYY, H:MM:SS AM/PM"
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.toString() });
   }
-
- images.push({
-  image: image,
-  digest: digest,
-  created: createdAt
- })
-
-})
-
-  }
-
-  res.json(images)
-
- }catch(err){
-  res.status(500).send(err.toString())
- }
-
-})
+});
 
 
 /* -----------------------------
