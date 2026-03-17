@@ -1,10 +1,17 @@
 <h1>DevOps Deployment Dashboard</h1>
 
-<select id="images"></select>
-<table>images</table>
+<table border="1">
+<thead>
+<tr>
+<th>Image</th>
+<th>Digest</th>
+<th>Created</th>
+<th>Action</th>
+</tr>
+</thead>
 
-<br><br>
+<tbody id="imageTable"></tbody>
 
-<button onclick="deploy()">Deploy</button>
+</table>
 
 <script src="app.js"></script>
