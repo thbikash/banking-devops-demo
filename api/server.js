@@ -28,23 +28,25 @@ app.get("/images", async (req, res) => {
     let images = [];
 
     for (const pkg of packages) {
-      // The first element of the response is the array of version objects
-      const [versions] = await client.listVersions({
-        parent: pkg.name
-      });
+      const [versions] = await client.listVersions({ parent: pkg.name });
 
       versions.forEach(v => {
-        // v.name looks like: projects/.../packages/my-app/versions/sha256:...
-        const parts = v.name.split('/');
-        const imageName = parts[parts.indexOf('packages') + 1];
-        const digest = parts[parts.indexOf('versions') + 1];
+        // Log 'v' to your Cloud Run logs so you can see the structure in the GCP Console
+        console.log("Processing version:", v.name);
 
-        let createdAt = "unknown";
+        const nameStr = String(v.name);
+        // Robust parsing using split/pop
+        const nameParts = nameStr.split('/');
+        const digest = nameParts.pop(); // last element
+        nameParts.pop(); // remove "versions"
+        const imageName = nameParts.pop(); // remove "packages" and get name
+
+        let createdAt = "No Date";
         if (v.createTime) {
-          // Google SDK returns a Timestamp object {seconds, nanos}
-          const seconds = v.createTime.seconds || v.createTime;
-          const date = new Date(seconds * 1000);
-          createdAt = date.toLocaleString();
+          // Handle both Timestamp objects and strings
+          const seconds = v.createTime.seconds || (v.createTime.getTime ? v.createTime.getTime() / 1000 : null);
+          const date = seconds ? new Date(seconds * 1000) : new Date(v.createTime);
+          createdAt = !isNaN(date) ? date.toLocaleString() : "Invalid Date";
         }
 
         images.push({
@@ -55,13 +57,12 @@ app.get("/images", async (req, res) => {
       });
     }
 
-    // CRITICAL: Ensure we send JSON
-    res.setHeader('Content-Type', 'application/json');
-    res.json(images);
+    // Force return as a clean JSON array
+    return res.status(200).json(images);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.toString() });
+    console.error("ERROR IN /IMAGES:", err);
+    return res.status(500).json({ error: err.toString() });
   }
 });
 
@@ -70,35 +71,40 @@ app.get("/images", async (req, res) => {
    DEPLOY IMAGE
 --------------------------------*/
 
-app.post("/deploy",(req,res)=>{
+const { ServicesClient } = require('@google-cloud/run').v2;
+const runClient = new ServicesClient();
 
- const image=req.body.image
- const digest=req.body.digest
+app.post("/deploy", async (req, res) => {
+  const { image, digest } = req.body;
+  const fullImage = `${REPO_PATH}/${image}@${digest}`;
+  
+  // The full resource name of the service we are updating
+  const servicePath = `projects/${PROJECT}/locations/${LOCATION}/services/banking-app`;
 
- const fullImage=`${REPO_PATH}/${image}@${digest}`
+  try {
+    console.log(`Deploying ${fullImage} to ${servicePath}`);
 
- const cmd=`
- gcloud run deploy banking-app \
- --image=${fullImage} \
- --region=us-central1 \
- --platform=managed \
- --allow-unauthenticated
- `
+    // Get the existing service configuration
+    const [service] = await runClient.getService({ name: servicePath });
 
- exec(cmd,(err,stdout,stderr)=>{
+    // Update the image in the container template
+    service.template.containers[0].image = fullImage;
 
-  if(err){
-   return res.status(500).send(stderr)
+    // Trigger the update
+    const [operation] = await runClient.updateService({ service });
+    
+    // We don't wait for the full deployment (which takes 1 min) 
+    // so the UI stays responsive.
+    res.json({
+      status: "Deployment initiated",
+      image: image,
+      operation: operation.name
+    });
+
+  } catch (err) {
+    console.error("Deployment Error:", err);
+    res.status(500).send("Deployment failed: " + err.message);
   }
-
-  res.json({
-   status:"Deployment started",
-   image,
-   digest
-  })
-
- })
-
-})
+});
 
 app.listen(8080,()=>console.log("API running"))
