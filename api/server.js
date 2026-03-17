@@ -40,6 +40,8 @@ app.get("/images", async (req,res)=>{
 
     versions.forEach(v=>{
 
+    console.log(JSON.stringify(v,null,2))
+
     const imageName = pkg.name.split("/").pop()
     const digest = v.name.split("/").pop()
 
