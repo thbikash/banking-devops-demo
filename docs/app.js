@@ -13,6 +13,7 @@ async function loadImages(){
       // The server already sent 'image' and 'digest'
       const image = item.image;
       const digest = item.digest;
+      const created = item.created;
 
       const row = document.createElement("tr")
 

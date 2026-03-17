@@ -45,10 +45,22 @@ app.get("/images", async (req,res)=>{
  const image = full.split("/packages/")[1].split("/")[0]
  const digest = full.split("/versions/")[1]
 
+ // Capture the createTime. 
+  // It usually comes as { seconds: "...", nanos: "..." } or a Date string.
+  let createdAt = "unknown";
+  if (v.createTime) {
+    // If it's a Protobuf timestamp (has .seconds), convert to JS Date
+    const date = v.createTime.seconds 
+      ? new Date(v.createTime.seconds * 1000) 
+      : new Date(v.createTime);
+    
+    createdAt = date.toLocaleString(); // Format: "M/D/YYYY, H:MM:SS AM/PM"
+  }
+
  images.push({
   image: image,
   digest: digest,
-  created: "unknown"
+  created: createdAt
  })
 
 })
