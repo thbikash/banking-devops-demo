@@ -21,33 +21,45 @@ const REPO_PATH =
    LIST IMAGES
 --------------------------------*/
 
-app.get("/images",(req,res)=>{
+app.get("/images", async (req,res)=>{
 
- const { exec } = require("child_process")
+ try{
 
- const cmd = `
- gcloud artifacts docker images list \
- us-central1-docker.pkg.dev/banking-app-test-486402/banking-repo \
- --format="json"
- `
+  const parent =
+  `projects/${PROJECT}/locations/${LOCATION}/repositories/${REPO}`
 
- exec(cmd,(err,stdout,stderr)=>{
+  const [packages] = await client.listPackages({parent})
 
-  if(err){
-   return res.status(500).send(stderr)
+  let images=[]
+
+  for(const pkg of packages){
+
+   const [versions] = await client.listVersions({
+    parent: pkg.name
+   })
+
+    versions.forEach(v=>{
+
+ const full = v.name
+
+ const image = full.split("/packages/")[1].split("/")[0]
+ const digest = full.split("/versions/")[1]
+
+ images.push({
+  image: image,
+  digest: digest,
+  created: "unknown"
+ })
+
+})
+
   }
-
-  const data = JSON.parse(stdout)
-
-  const images = data.map(img=>({
-   image: img.package.split("/").pop(),
-   digest: img.version,
-   created: img.createTime
-  }))
 
   res.json(images)
 
- })
+ }catch(err){
+  res.status(500).send(err.toString())
+ }
 
 })
 
