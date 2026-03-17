@@ -3,24 +3,19 @@ const API = "https://banking-app-342079872292.us-central1.run.app"
 async function loadImages(){
 
  const res = await fetch(API + "/images")
-
- let lines
-
- try{
-  lines = await res.json()
- }catch{
-  const text = await res.text()
-  lines = text.split("\n")
- }
+ const data = await res.json()
 
  const table = document.getElementById("imageTable")
 
- lines.forEach(line => {
+ data.forEach(line => {
 
-  if(!line.includes("packages")) return
+  // Extract image and digest safely
+  const match = line.match(/packages\/(.*?)\/versions\/(sha256:[a-z0-9]+)/)
 
-  const image = line.split("/packages/")[1].split("/")[0]
-  const digest = line.split("/versions/")[1]
+  if(!match) return
+
+  const image = match[1]
+  const digest = match[2]
 
   const row = document.createElement("tr")
 
