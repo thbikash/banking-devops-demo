@@ -15,17 +15,13 @@ async function loadImages(){
       const digest = item.digest;
       const created = item.created;
 
-      const row = document.createElement("tr")
-
-      row.innerHTML = `
-        <td>${image}</td>
-        <td>${digest}</td>
-        <td>${item.created || '-'}</td>
-        <td>
-          <button onclick="deploy('${image}','${digest}')">
-            Deploy
-          </button>
-        </td>
+     // Inside your data.forEach loop
+const row = document.createElement("tr");
+row.innerHTML = `
+  <td>${item.image}</td>
+  <td>${item.digest}</td>
+  <td>${item.created}</td> 
+  <td><button onclick="deploy('${item.image}','${item.digest}')">Deploy</button></td>;
       `
       table.appendChild(row)
     })
