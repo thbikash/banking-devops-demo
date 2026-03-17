@@ -12,9 +12,9 @@ async function loadImages(){
   const row=document.createElement("tr")
 
   row.innerHTML=`
-   <td>${img.image}</td>
-   <td>${img.digest}</td>
-   <td>${img.created}</td>
+    <td>${img.image || "-"}</td>
+    <td>${img.digest || "-"}</td>
+    <td>${img.created || "-"}</td>
    <td>
     <button onclick="deploy('${img.image}','${img.digest}')">
      Deploy
