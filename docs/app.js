@@ -21,7 +21,7 @@ row.innerHTML = `
   <td>${item.image}</td>
   <td>${item.digest}</td>
   <td>${item.created}</td> 
-  <td><button onclick="deploy('${item.image}','${item.digest}')">Deploy</button></td>;
+  <td><button onclick="deploy('${item.image}','${item.digest}')">Deploy</button></td>
       `
       table.appendChild(row)
     })
