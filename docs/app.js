@@ -1,4 +1,4 @@
-const API = "https://deploy-api-342079872292.us-central1.run.app/images"
+const API = "https://deploy-api-342079872292.us-central1.run.app"
 
 async function loadImages(){
   try {
