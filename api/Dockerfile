@@ -10,6 +10,6 @@ RUN npm install
 COPY . .
 
 # Cloud Run expects port 8080 by default
-EXPOSE 8081
+EXPOSE 8080
 
 CMD ["node", "server.js"]
