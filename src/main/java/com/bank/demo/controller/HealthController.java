@@ -8,7 +8,7 @@ public class HealthController {
 
     @GetMapping("/")
     public String home() {
-        return "Banking App. is running successfully.....V1.0";
+        return "Banking App. is running successfully.....V1.1";
     }
 
     @GetMapping("/health")
